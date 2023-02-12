@@ -1,18 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="static/style.css" />
-    <title>Home</title>
-    <script src="static/index.js"></script>
-  </head>
-  <body>
-    <h1>Home Page</h1>
+{{template "base" .}}
 
-    <p>Esta é a minha página inicial</p>
+{{define "title"}}
+Home
+{{ end }}
 
-    <a href="about">About</a>
-  </body>
-</html>
+{{define "content"}}
+<h1>Home Page</h1>
+
+<p>Esta é a minha página inicial</p>
+
+<p>Alterei o conteúdo da home</p>
+
+<a href="about">About</a>
+{{ end }}
