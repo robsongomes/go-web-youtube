@@ -1,33 +1,40 @@
 package main
 
 import (
-	"io"
+	"html/template"
 	"log"
 	"net/http"
-	"os"
-	"strings"
 )
 
-func StaticHandler(w http.ResponseWriter, r *http.Request) {
+func HomeHandler(w http.ResponseWriter, r *http.Request) {
+	RenderTemplate(w, "index")
+}
 
-	// /home
-	f, err := os.Open("static" + r.URL.Path)
+func ContactHandler(w http.ResponseWriter, r *http.Request) {
+	RenderTemplate(w, "contact")
+}
 
+func RenderTemplate(w http.ResponseWriter, page string) {
+	tp, err := template.ParseFiles("templates/" + page + ".page.tmpl")
 	if err != nil {
 		log.Println(err)
 		return
 	}
-
-	if strings.HasSuffix(r.URL.Path, ".css") {
-		w.Header().Add("Content-Type", "text/css")
-	}
-
-	io.Copy(w, f)
+	tp.Execute(w, nil)
 }
 
 func main() {
 
-	http.HandleFunc("/", StaticHandler)
+	http.HandleFunc("/", HomeHandler)
+	http.HandleFunc("/contact", ContactHandler)
+
+	http.HandleFunc("/about", func(w http.ResponseWriter, r *http.Request) {
+		RenderTemplate(w, "about")
+	})
+
+	http.Handle("/static/",
+		http.StripPrefix("/static/",
+			http.FileServer(http.Dir("static"))))
 
 	http.ListenAndServe(":3000", nil)
 }
