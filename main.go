@@ -1,61 +1,27 @@
 package main
 
 import (
-	"fmt"
+	"flag"
 	"html/template"
 	"log"
-	"net/http"
 )
 
-var env = "dev"
-var cache map[string]*template.Template
+func main() {
+	cache := make(map[string]*template.Template)
 
-func HomeHandler(w http.ResponseWriter, r *http.Request) {
-	RenderTemplate(w, "index")
-}
+	cfg := Config{Version: "1.0.0"}
+	flag.StringVar(&cfg.Port, "port", "3000", "porta do servidor")
+	flag.StringVar(&cfg.Env, "env", "dev", "ambiente de execução")
 
-func ContactHandler(w http.ResponseWriter, r *http.Request) {
-	RenderTemplate(w, "contact")
-}
+	flag.Parse()
 
-func RenderTemplate(w http.ResponseWriter, page string) {
-
-	var t *template.Template
-	var err error
-
-	_, exists := cache[page]
-
-	if !exists || env == "dev" {
-		t, err = template.ParseFiles(
-			"templates/"+page+".page.tmpl",
-			"templates/base.layout.tmpl",
-		)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-		cache[page] = t
-	} else {
-		fmt.Println("Cache hit")
-		t = cache[page]
+	app := Application{
+		Config: cfg,
+		Cache:  cache,
 	}
 
-	t.Execute(w, nil)
-}
+	log.Printf("Servidor na versão %s-%s escutando na porta %s\n",
+		cfg.Version, cfg.Env, cfg.Port)
 
-func main() {
-	cache = make(map[string]*template.Template)
-
-	http.HandleFunc("/", HomeHandler)
-	http.HandleFunc("/contact", ContactHandler)
-
-	http.HandleFunc("/about", func(w http.ResponseWriter, r *http.Request) {
-		RenderTemplate(w, "about")
-	})
-
-	http.Handle("/static/",
-		http.StripPrefix("/static/",
-			http.FileServer(http.Dir("static"))))
-
-	http.ListenAndServe(":3000", nil)
+	log.Fatal(app.Start())
 }
