@@ -1,11 +1,15 @@
 package main
 
 import (
+	"embed"
 	"fmt"
 	"html/template"
 	"log"
 	"net/http"
 )
+
+//go:embed templates
+var TemplateFS embed.FS
 
 func (a *Application) RenderTemplate(w http.ResponseWriter, page string) {
 
@@ -15,8 +19,10 @@ func (a *Application) RenderTemplate(w http.ResponseWriter, page string) {
 	_, exists := a.Cache[page]
 
 	if !exists || a.Config.Env == "dev" {
-		t, err = template.ParseFiles(
+		t, err = template.ParseFS(
+			TemplateFS,
 			"templates/"+page+".page.tmpl",
+			"templates/navbar.layout.tmpl",
 			"templates/base.layout.tmpl",
 		)
 		if err != nil {
@@ -29,5 +35,13 @@ func (a *Application) RenderTemplate(w http.ResponseWriter, page string) {
 		t = a.Cache[page]
 	}
 
-	t.Execute(w, nil)
+	contact := struct {
+		Email    string
+		Telefone string
+	}{
+		Email:    "robson@gmail.com",
+		Telefone: "88 988888888",
+	}
+
+	t.Execute(w, contact)
 }
