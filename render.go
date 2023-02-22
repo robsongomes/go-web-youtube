@@ -11,7 +11,12 @@ import (
 //go:embed templates
 var TemplateFS embed.FS
 
-func (a *Application) RenderTemplate(w http.ResponseWriter, page string) {
+type TemplateData struct {
+	Email    string
+	Telefone string
+}
+
+func (a *Application) RenderTemplate(w http.ResponseWriter, page string, data any) {
 
 	var t *template.Template
 	var err error
@@ -19,12 +24,7 @@ func (a *Application) RenderTemplate(w http.ResponseWriter, page string) {
 	_, exists := a.Cache[page]
 
 	if !exists || a.Config.Env == "dev" {
-		t, err = template.ParseFS(
-			TemplateFS,
-			"templates/"+page+".page.tmpl",
-			"templates/navbar.layout.tmpl",
-			"templates/base.layout.tmpl",
-		)
+		t, err = parseTemplate(page, a.Config.Env)
 		if err != nil {
 			log.Println(err)
 			return
@@ -35,13 +35,21 @@ func (a *Application) RenderTemplate(w http.ResponseWriter, page string) {
 		t = a.Cache[page]
 	}
 
-	contact := struct {
-		Email    string
-		Telefone string
-	}{
-		Email:    "robson@gmail.com",
-		Telefone: "88 988888888",
-	}
+	t.ExecuteTemplate(w, "base", data)
+}
 
-	t.Execute(w, contact)
+func parseTemplate(page, env string) (*template.Template, error) {
+	if env != "dev" {
+		return template.ParseFS(
+			TemplateFS,
+			"templates/base.layout.tmpl",
+			"templates/"+page+".page.tmpl",
+			"templates/navbar.layout.tmpl",
+		)
+	}
+	return template.ParseFiles(
+		"templates/base.layout.tmpl",
+		"templates/"+page+".page.tmpl",
+		"templates/navbar.layout.tmpl",
+	)
 }

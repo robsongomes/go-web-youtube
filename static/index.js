@@ -1,1 +1,1 @@
-alert("chamou o javascript");
+console.log("chamou o javascript");
