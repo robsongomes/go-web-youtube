@@ -5,11 +5,12 @@ import "net/http"
 func (app *Application) Routes() http.Handler {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/", app.HomeHandler)
-	mux.HandleFunc("/contact", app.ContactHandler)
-	mux.HandleFunc("/about", app.AboutHandler)
+	//poderia levar a criação dos handlers para o main
+	mux.HandleFunc("/", app.HomeHandler(LoginView))
+	mux.HandleFunc("/contact", app.ContactHandler(ContactView))
+	mux.HandleFunc("/about", app.AboutHandler(AboutView))
 
-	mux.HandleFunc("/login", app.LoginHandler)
+	mux.HandleFunc("/login", app.LoginHandler(LoginView))
 
 	mux.Handle("/static/",
 		http.StripPrefix("/static/",
