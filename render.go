@@ -24,6 +24,7 @@ var funcs = template.FuncMap{
 	},
 }
 
+// RenderTemplate
 func (a *Application) RenderTemplate(w http.ResponseWriter, page string, data any) error {
 
 	var t *template.Template
