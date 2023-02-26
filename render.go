@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"time"
 )
 
 //go:embed templates
@@ -14,9 +15,16 @@ var TemplateFS embed.FS
 type TemplateData struct {
 	Email    string
 	Telefone string
+	Route    string
 }
 
-func (a *Application) RenderTemplate(w http.ResponseWriter, page string, data any) {
+var funcs = template.FuncMap{
+	"GetYear": func() int {
+		return time.Now().Year()
+	},
+}
+
+func (a *Application) RenderTemplate(w http.ResponseWriter, page string, data any) error {
 
 	var t *template.Template
 	var err error
@@ -27,7 +35,7 @@ func (a *Application) RenderTemplate(w http.ResponseWriter, page string, data an
 		t, err = parseTemplate(page, a.Config.Env)
 		if err != nil {
 			log.Println(err)
-			return
+			return err
 		}
 		a.Cache[page] = t
 	} else {
@@ -35,19 +43,20 @@ func (a *Application) RenderTemplate(w http.ResponseWriter, page string, data an
 		t = a.Cache[page]
 	}
 
-	t.ExecuteTemplate(w, "base", data)
+	return t.ExecuteTemplate(w, "base", data)
 }
 
 func parseTemplate(page, env string) (*template.Template, error) {
+	t := template.New("").Funcs(funcs)
 	if env != "dev" {
-		return template.ParseFS(
+		return t.ParseFS(
 			TemplateFS,
 			"templates/base.layout.tmpl",
 			"templates/"+page+".page.tmpl",
 			"templates/navbar.layout.tmpl",
 		)
 	}
-	return template.ParseFiles(
+	return t.ParseFiles(
 		"templates/base.layout.tmpl",
 		"templates/"+page+".page.tmpl",
 		"templates/navbar.layout.tmpl",
