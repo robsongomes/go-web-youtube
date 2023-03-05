@@ -17,19 +17,19 @@ var HomeView *View
 func createViews() {
 	var err error
 
-	LoginView, err = NewView(BASE_LAYOUT, "login")
+	LoginView, err = NewView("login")
 	if err != nil {
 		log.Fatal(err)
 	}
-	AboutView, err = NewView(BASE_LAYOUT, "about")
+	AboutView, err = NewView("about")
 	if err != nil {
 		log.Fatal(err)
 	}
-	ContactView, err = NewView(BASE_LAYOUT, "contact")
+	ContactView, err = NewView("contact")
 	if err != nil {
 		log.Fatal(err)
 	}
-	HomeView, err = NewView(BASE_LAYOUT, "index")
+	HomeView, err = NewView("index")
 	if err != nil {
 		log.Fatal(err)
 	}
