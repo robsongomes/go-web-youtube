@@ -5,5 +5,41 @@ Login
 {{ end }}
 
 {{define "content"}}
-<h1>Login Page</h1>
+
+<div class="container col-5">
+  <div>
+    <ul>
+      {{
+        range.Errors
+      }}
+      <li>{{.}}</li>
+      {{
+        end
+      }}
+    </ul>
+  </div>
+  <form action="login" method="post" class="m-5">
+    <div class="mb-3 row">
+      <label for="email" class="col-sm-2 col-form-label">Email</label>
+      <div class="col-sm-10">
+        <input type="email" id="email" name="email" class="form-control" />
+      </div>
+    </div>
+    <div class="mb-3 row">
+      <label for="password" class="col-sm-2 col-form-label">Password</label>
+      <div class="col-sm-10">
+        <input
+          type="password"
+          id="password"
+          name="password"
+          class="form-control"
+        />
+      </div>
+    </div>
+    <div class="row col-3 offset-2">
+      <button type="submit" class="btn btn-primary">Login</button>
+    </div>
+  </form>
+</div>
+
 {{ end }}

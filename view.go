@@ -17,6 +17,7 @@ const BASE_LAYOUT = "base"
 type View struct {
 	Template *template.Template
 	Layout   string
+	Pages    []string
 }
 
 var funcs = template.FuncMap{
@@ -34,6 +35,29 @@ func getLayoutFiles() []string {
 }
 
 func NewView(pages ...string) (*View, error) {
+	t, err := parseTemplates(pages...)
+	if err != nil {
+		return nil, err
+	}
+	return &View{
+		Template: t,
+		Layout:   BASE_LAYOUT,
+		Pages:    pages,
+	}, nil
+}
+
+func (v *View) Render(w http.ResponseWriter, data any) error {
+	if env == "dev" {
+		t, err := parseTemplates(v.Pages...)
+		if err != nil {
+			return err
+		}
+		v.Template = t
+	}
+	return v.Template.ExecuteTemplate(w, v.Layout, data)
+}
+
+func parseTemplates(pages ...string) (*template.Template, error) {
 	files := getLayoutFiles()
 	for _, f := range pages {
 		files = append(files, fmt.Sprintf("templates/%s.page.tmpl", f))
@@ -57,12 +81,6 @@ func NewView(pages ...string) (*View, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &View{
-		Template: t,
-		Layout:   BASE_LAYOUT,
-	}, nil
-}
 
-func (v *View) Render(w http.ResponseWriter, data any) error {
-	return v.Template.ExecuteTemplate(w, v.Layout, data)
+	return t, nil
 }
