@@ -18,7 +18,7 @@ Login
       }}
     </ul>
   </div>
-  <form action="login" method="post" class="m-5">
+  <form id="form" action="#" method="post" class="m-5">
     <div class="mb-3 row">
       <label for="email" class="col-sm-2 col-form-label">Email</label>
       <div class="col-sm-10">
@@ -37,9 +37,38 @@ Login
       </div>
     </div>
     <div class="row col-3 offset-2">
-      <button type="submit" class="btn btn-primary">Login</button>
+      <button id="button" type="submit" class="btn btn-primary">Login</button>
     </div>
   </form>
 </div>
 
+{{ end }}
+
+{{define "script"}}
+<script>
+  document.getElementById("button").addEventListener("click", (event) => {
+    event.preventDefault();
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    fetch("/login", {
+      method: "post",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+        if (data.success) {
+          setTimeout(() => {
+            console.log("Redirecionando para a home...");
+            window.location = "/";
+          }, 1000);
+        }
+      });
+  });
+</script>
 {{ end }}
