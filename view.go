@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"net/http"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -46,7 +47,20 @@ func NewView(pages ...string) (*View, error) {
 	}, nil
 }
 
-func (v *View) Render(w http.ResponseWriter, data any) error {
+func addDefaultTemplateData(r *http.Request, data *TemplateData) *TemplateData {
+	data.User = getUserFromCookie(r)
+
+	path := strings.ReplaceAll(r.URL.Path, "/", "")
+	if path == "" {
+		path = "index"
+	}
+
+	data.Route = path
+
+	return data
+}
+
+func (v *View) Render(w http.ResponseWriter, r *http.Request, data *TemplateData) error {
 	if env == "dev" {
 		t, err := parseTemplates(v.Pages...)
 		if err != nil {
@@ -54,6 +68,13 @@ func (v *View) Render(w http.ResponseWriter, data any) error {
 		}
 		v.Template = t
 	}
+
+	if data == nil {
+		data = &TemplateData{}
+	}
+
+	data = addDefaultTemplateData(r, data)
+
 	return v.Template.ExecuteTemplate(w, v.Layout, data)
 }
 

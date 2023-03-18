@@ -13,6 +13,7 @@ var LoginView *View
 var AboutView *View
 var ContactView *View
 var HomeView *View
+var PostView *View
 
 func createViews() {
 	var err error
@@ -30,6 +31,10 @@ func createViews() {
 		log.Fatal(err)
 	}
 	HomeView, err = NewView("index")
+	if err != nil {
+		log.Fatal(err)
+	}
+	PostView, err = NewView("post")
 	if err != nil {
 		log.Fatal(err)
 	}

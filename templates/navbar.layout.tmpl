@@ -24,9 +24,18 @@
         <li class="nav-item">
           <a class="nav-link {{if eq .Route "contact"}}active{{end}}" href="/contact">Contact</a>
         </li>
+        {{if .User}}
+        <li class="nav-item">
+          <a class="nav-link {{if eq .Route "post"}}active{{end}}" href="/post">Post</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {{if eq .Route "login"}}active{{end}}" href="/logout">Logout ({{.User.Email}})</a>
+        </li>
+        {{else}}
         <li class="nav-item">
           <a class="nav-link {{if eq .Route "login"}}active{{end}}" href="/login">Login</a>
         </li>
+        {{end}}
       </ul>
     </div>
   </div>
