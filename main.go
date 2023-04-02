@@ -1,13 +1,17 @@
 package main
 
 import (
+	"database/sql"
 	"flag"
 	"html/template"
 	"log"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 var env = "dev"
 var cache = make(map[string]*template.Template)
+var db *sql.DB
 
 var LoginView *View
 var AboutView *View
@@ -53,6 +57,18 @@ func main() {
 		Config: cfg,
 		Cache:  cache,
 	}
+
+	//conectar com o mysql (mariadb)
+
+	db, _ = sql.Open("mysql", "root:secret@/mysql")
+
+	err := db.Ping()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	log.Println("Conectou com o banco de dados")
 
 	createViews()
 

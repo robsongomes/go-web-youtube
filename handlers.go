@@ -90,7 +90,22 @@ func (app *Application) LoginHandler(view *View) http.HandlerFunc {
 				log.Println(err)
 			}
 
-			if data.Password == "123456" {
+			var user struct {
+				Id       int
+				Email    string
+				Password string
+			}
+
+			//buscar o usuário pelo email
+			row := db.QueryRow("select id, email, password from users where email = ?", data.Email)
+
+			err = row.Scan(&user.Id, &user.Email, &user.Password)
+			if err != nil {
+				log.Println(err)
+				return
+			}
+
+			if data.Password == user.Password {
 				//login com sucesso
 				data.Success = true
 
