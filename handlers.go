@@ -83,6 +83,7 @@ func (app *Application) LoginHandler(view *View) http.HandlerFunc {
 				Email    string `json:"email"`
 				Password string `json:"password"`
 				Success  bool   `json:"success"`
+				Error    string `json:"error"`
 			}
 
 			err := json.NewDecoder(r.Body).Decode(&data)
@@ -102,6 +103,8 @@ func (app *Application) LoginHandler(view *View) http.HandlerFunc {
 			err = row.Scan(&user.Id, &user.Email, &user.Password)
 			if err != nil {
 				log.Println(err)
+				data.Error = err.Error()
+				json.NewEncoder(w).Encode(data)
 				return
 			}
 
@@ -124,6 +127,61 @@ func (app *Application) LoginHandler(view *View) http.HandlerFunc {
 				json.NewEncoder(w).Encode(data)
 				return
 			}
+		}
+	}
+}
+
+func (app *Application) SignupHandler(view *View) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			err := view.Render(w, r, nil)
+			if err != nil {
+				log.Println(err)
+			}
+		} else if r.Method == http.MethodPost {
+
+			var data struct {
+				Email    string `json:"email"`
+				Password string `json:"password"`
+				Success  bool   `json:"success"`
+				Error    string `json:"error"`
+			}
+
+			err := json.NewDecoder(r.Body).Decode(&data)
+			if err != nil {
+				log.Println(err)
+			}
+
+			//salvar o usuário no banco de dados
+
+			stmt, err := db.Prepare("insert into users (email, password) values (?, ?)")
+			if err != nil {
+				data.Error = err.Error()
+				json.NewEncoder(w).Encode(data)
+				return
+			}
+
+			_, err = stmt.Exec(data.Email, data.Password)
+			if err != nil {
+				data.Error = err.Error()
+				json.NewEncoder(w).Encode(data)
+				return
+			}
+
+			//loga o usuário recém cadastrado
+			data.Success = true
+			data.Error = ""
+
+			cookie := http.Cookie{
+				Name:     "session",
+				Value:    data.Email,
+				Expires:  time.Now().Add(time.Minute * 3),
+				HttpOnly: true,
+			}
+
+			http.SetCookie(w, &cookie)
+
+			json.NewEncoder(w).Encode(data)
 		}
 	}
 }

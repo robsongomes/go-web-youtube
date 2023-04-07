@@ -1,6 +1,6 @@
 CREATE TABLE users (
     id int not null auto_increment,
-    email varchar(255),
+    email varchar(255) unique,
     password varchar(255),
     primary key (id)
 );

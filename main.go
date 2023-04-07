@@ -18,11 +18,16 @@ var AboutView *View
 var ContactView *View
 var HomeView *View
 var PostView *View
+var SignupView *View
 
 func createViews() {
 	var err error
 
 	LoginView, err = NewView("login")
+	if err != nil {
+		log.Fatal(err)
+	}
+	SignupView, err = NewView("signup")
 	if err != nil {
 		log.Fatal(err)
 	}

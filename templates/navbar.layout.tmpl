@@ -33,6 +33,9 @@
         </li>
         {{else}}
         <li class="nav-item">
+          <a class="nav-link {{if eq .Route "signup"}}active{{end}}" href="/signup">Signup</a>
+        </li>
+        <li class="nav-item">
           <a class="nav-link {{if eq .Route "login"}}active{{end}}" href="/login">Login</a>
         </li>
         {{end}}
