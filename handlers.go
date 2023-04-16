@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"regexp"
+	"strings"
 	"time"
 )
 
@@ -12,19 +14,19 @@ type TemplateData struct {
 	Telefone string
 	Route    string
 	Errors   []string
-	User     *User
+	User     *SessionUser
 }
 
-type User struct {
+type SessionUser struct {
 	Email string
 }
 
-func getUserFromCookie(r *http.Request) *User {
+func getUserFromCookie(r *http.Request) *SessionUser {
 	cookie, err := r.Cookie("session")
 	if err != nil {
 		return nil
 	}
-	return &User{Email: cookie.Value}
+	return &SessionUser{Email: cookie.Value}
 }
 
 func (app *Application) AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
@@ -91,21 +93,9 @@ func (app *Application) LoginHandler(view *View) http.HandlerFunc {
 				log.Println(err)
 			}
 
-			var user struct {
-				Id       int
-				Email    string
-				Password string
-			}
-
-			//buscar o usuário pelo email
-			row := db.QueryRow("select id, email, password from users where email = ?", data.Email)
-
-			err = row.Scan(&user.Id, &user.Email, &user.Password)
+			user, err := FindUserByEmail(data.Email)
 			if err != nil {
 				log.Println(err)
-				data.Error = err.Error()
-				json.NewEncoder(w).Encode(data)
-				return
 			}
 
 			if data.Password == user.Password {
@@ -193,6 +183,63 @@ func (app *Application) PostHandler(view *View) http.HandlerFunc {
 			log.Println(err)
 		}
 	}
+}
+
+func (app *Application) NewPostHandler(view *View) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			err := view.Render(w, r, nil)
+			if err != nil {
+				log.Println(err)
+			}
+		} else if r.Method == http.MethodPost {
+			title := r.FormValue("title")
+			content := r.FormValue("content")
+			errors := make([]string, 0)
+
+			if len(strings.Trim(title, " ")) == 0 {
+				errors = append(errors, "Title is required")
+			}
+
+			if len(strings.Trim(content, " ")) == 0 {
+				errors = append(errors, "Content is required")
+			}
+
+			userDTO := getUserFromCookie(r)
+			user, err := FindUserByEmail(userDTO.Email)
+			if err != nil {
+				errors = append(errors, "You are not logged in")
+			}
+
+			post := Post{
+				Title:   title,
+				Content: content,
+				Slug:    slugify(title),
+				Author:  user,
+			}
+
+			log.Println(post)
+
+			if len(errors) > 0 {
+				view.Render(w, r, &TemplateData{Errors: errors})
+				return
+			}
+
+			err = view.Render(w, r, nil)
+			if err != nil {
+				log.Println(err)
+			}
+			return
+		}
+	}
+}
+
+func slugify(value string) string {
+	value = strings.ToLower(value)
+	reg := regexp.MustCompile("[^a-z0-9]+")
+	value = reg.ReplaceAllString(value, "-")
+	value = strings.Trim(value, "-")
+	return value
 }
 
 func (app *Application) LogoutHandler(w http.ResponseWriter, r *http.Request) {

@@ -19,6 +19,7 @@ var ContactView *View
 var HomeView *View
 var PostView *View
 var SignupView *View
+var NewPostView *View
 
 func createViews() {
 	var err error
@@ -44,6 +45,10 @@ func createViews() {
 		log.Fatal(err)
 	}
 	PostView, err = NewView("post")
+	if err != nil {
+		log.Fatal(err)
+	}
+	NewPostView, err = NewView("post-new")
 	if err != nil {
 		log.Fatal(err)
 	}

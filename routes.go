@@ -10,6 +10,7 @@ func (app *Application) Routes() http.Handler {
 	mux.HandleFunc("/contact", app.ContactHandler(ContactView))
 	mux.HandleFunc("/about", app.AboutHandler(AboutView))
 	mux.HandleFunc("/post", app.AuthMiddleware(app.PostHandler(PostView)))
+	mux.HandleFunc("/post/new", app.AuthMiddleware(app.NewPostHandler(NewPostView)))
 
 	mux.HandleFunc("/login", app.LoginHandler(LoginView))
 	mux.HandleFunc("/signup", app.SignupHandler(SignupView))
