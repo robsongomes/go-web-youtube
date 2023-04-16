@@ -9,6 +9,17 @@ Posts
 Bem vindo, {{.User.Email}}
 {{ end }}
 
+<h3>Lista de Posts</h3>
+<ul>
+  {{
+    range.Posts
+  }}
+  <li>{{.Title}}</li>
+  {{
+    end
+  }}
+</ul>
+
 <a href="post/new">Create new post</a>
 
 {{ end }}

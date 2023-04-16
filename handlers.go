@@ -15,6 +15,7 @@ type TemplateData struct {
 	Route    string
 	Errors   []string
 	User     *SessionUser
+	Posts    []Post
 }
 
 type SessionUser struct {
@@ -178,7 +179,8 @@ func (app *Application) SignupHandler(view *View) http.HandlerFunc {
 
 func (app *Application) PostHandler(view *View) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		err := view.Render(w, r, nil)
+		posts := RetrievePosts()
+		err := view.Render(w, r, &TemplateData{Posts: posts})
 		if err != nil {
 			log.Println(err)
 		}
@@ -218,18 +220,17 @@ func (app *Application) NewPostHandler(view *View) http.HandlerFunc {
 				Author:  user,
 			}
 
-			log.Println(post)
+			err = CreatePost(post)
+			if err != nil {
+				errors = append(errors, err.Error())
+			}
 
 			if len(errors) > 0 {
 				view.Render(w, r, &TemplateData{Errors: errors})
 				return
 			}
 
-			err = view.Render(w, r, nil)
-			if err != nil {
-				log.Println(err)
-			}
-			return
+			http.Redirect(w, r, "/post", http.StatusSeeOther)
 		}
 	}
 }
