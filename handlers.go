@@ -2,9 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -16,6 +18,7 @@ type TemplateData struct {
 	Errors   []string
 	User     *SessionUser
 	Posts    []Post
+	Post     Post
 }
 
 type SessionUser struct {
@@ -38,7 +41,6 @@ func (app *Application) AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return
 		}
-		log.Println("User logged in")
 		next(w, r)
 	}
 }
@@ -106,7 +108,7 @@ func (app *Application) LoginHandler(view *View) http.HandlerFunc {
 				cookie := http.Cookie{
 					Name:     "session",
 					Value:    data.Email,
-					Expires:  time.Now().Add(time.Minute * 3),
+					Expires:  time.Now().Add(time.Minute * 15),
 					HttpOnly: true,
 				}
 
@@ -229,6 +231,34 @@ func (app *Application) NewPostHandler(view *View) http.HandlerFunc {
 				view.Render(w, r, &TemplateData{Errors: errors})
 				return
 			}
+
+			http.Redirect(w, r, "/post", http.StatusSeeOther)
+		}
+	}
+}
+
+func (app *Application) EditPostHandler(view *View) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		postId := r.URL.Query().Get("id")
+		id, _ := strconv.Atoi(postId)
+
+		log.Println("Recuperando o post de id =", id)
+
+		postFake := Post{Id: id, Title: fmt.Sprintf("Post Fake %d", id), Content: "Fake Content"}
+
+		//recuperar o objeto do banco de dados e devolver para o navegador
+
+		if r.Method == http.MethodGet {
+			err := view.Render(w, r, &TemplateData{Post: postFake})
+			if err != nil {
+				log.Println(err)
+			}
+		} else if r.Method == http.MethodPost {
+			title := r.FormValue("title")
+			content := r.FormValue("content")
+			idHidden := r.FormValue("id")
+			//atualizar o post no banco de dados
+			log.Printf("Atualizando post %s com title %s e content %s\n", idHidden, title, content)
 
 			http.Redirect(w, r, "/post", http.StatusSeeOther)
 		}

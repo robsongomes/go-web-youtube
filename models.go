@@ -18,7 +18,7 @@ type Post struct {
 	Slug      string
 	Author    *User
 	CreatedAt time.Time
-	UpdateAt  time.Time
+	UpdatedAt time.Time
 }
 
 func FindUserByEmail(email string) (*User, error) {
@@ -51,7 +51,7 @@ func RetrievePosts() []Post {
 	posts := []Post{}
 
 	//buscar o usuário pelo email
-	rows, err := db.Query(`select id, title, slug, content, user_id from posts`)
+	rows, err := db.Query(`select id, title, slug, content, user_id, created_at, updated_at from posts`)
 	if err != nil {
 		log.Println(err)
 		return posts
@@ -65,7 +65,10 @@ func RetrievePosts() []Post {
 			&post.Title,
 			&post.Slug,
 			&post.Content,
-			&user.Id)
+			&user.Id,
+			&post.CreatedAt,
+			&post.UpdatedAt,
+		)
 		if err != nil {
 			log.Println(err)
 			return posts

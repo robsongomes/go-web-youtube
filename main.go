@@ -20,6 +20,7 @@ var HomeView *View
 var PostView *View
 var SignupView *View
 var NewPostView *View
+var EditPostView *View
 
 func createViews() {
 	var err error
@@ -52,6 +53,10 @@ func createViews() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	EditPostView, err = NewView("post-edit")
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func main() {
@@ -70,7 +75,7 @@ func main() {
 
 	//conectar com o mysql (mariadb)
 
-	db, _ = sql.Open("mysql", "root:secret@/mysql")
+	db, _ = sql.Open("mysql", "root:secret@/mysql?parseTime=true")
 
 	err := db.Ping()
 	if err != nil {

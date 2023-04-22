@@ -3,23 +3,39 @@ Posts
 {{ end }}
 
 {{define "content"}}
-<h1>Posts page</h1>
+<h1>Posts</h1>
 
-{{if .User}}
-Bem vindo, {{.User.Email}}
-{{ end }}
+<div class="container">
+  <a class="btn btn-primary btn-sm my-3" href="post/new">New Post</a>
 
-<h3>Lista de Posts</h3>
-<ul>
-  {{
-    range.Posts
-  }}
-  <li>{{.Title}}</li>
-  {{
-    end
-  }}
-</ul>
-
-<a href="post/new">Create new post</a>
-
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th scope="col">Id</th>
+        <th scope="col">Title</th>
+        <th scope="col">Created</th>
+        <th scope="col">Updated</th>
+        <th scope="col">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{
+        range.Posts
+      }}
+      <tr>
+        <td scope="row">{{.Id}}</td>
+        <td scope="row">{{.Title}}</td>
+        <td scope="row">{{.CreatedAt | FormattedDate}}</td>
+        <td scope="row">{{.UpdatedAt | FormattedDate}}</td>
+        <td scope="row">
+          <a title="edit" href="/post/edit?id={{.Id}}">Edit</a> |
+          <a title="delete" href="#">Delete</a>
+        </td>
+      </tr>
+      {{
+        end
+      }}
+    </tbody>
+  </table>
+</div>
 {{ end }}
