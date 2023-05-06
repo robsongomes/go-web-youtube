@@ -181,8 +181,13 @@ func (app *Application) SignupHandler(view *View) http.HandlerFunc {
 
 func (app *Application) PostHandler(view *View) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		errorMsg := r.URL.Query().Get("error")
+		errors := []string{}
+		if len(errorMsg) > 0 {
+			errors = append(errors, errorMsg)
+		}
 		posts := RetrievePosts()
-		err := view.Render(w, r, &TemplateData{Posts: posts})
+		err := view.Render(w, r, &TemplateData{Posts: posts, Errors: errors})
 		if err != nil {
 			log.Println(err)
 		}
@@ -241,28 +246,49 @@ func (app *Application) EditPostHandler(view *View) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		postId := r.URL.Query().Get("id")
 		id, _ := strconv.Atoi(postId)
-
-		log.Println("Recuperando o post de id =", id)
-
-		postFake := Post{Id: id, Title: fmt.Sprintf("Post Fake %d", id), Content: "Fake Content"}
-
-		//recuperar o objeto do banco de dados e devolver para o navegador
-
 		if r.Method == http.MethodGet {
-			err := view.Render(w, r, &TemplateData{Post: postFake})
+			post, err := GetPostById(id)
+			if err != nil {
+				view.Render(w, r, &TemplateData{Post: *post, Errors: []string{err.Error()}})
+				return
+			}
+			err = view.Render(w, r, &TemplateData{Post: *post})
+
 			if err != nil {
 				log.Println(err)
 			}
+			return
 		} else if r.Method == http.MethodPost {
 			title := r.FormValue("title")
 			content := r.FormValue("content")
-			idHidden := r.FormValue("id")
-			//atualizar o post no banco de dados
-			log.Printf("Atualizando post %s com title %s e content %s\n", idHidden, title, content)
+			post := Post{
+				Id:        id,
+				Title:     title,
+				Content:   content,
+				Slug:      slugify(title),
+				UpdatedAt: time.Now(),
+			}
 
+			err := UpdatePost(post)
+			if err != nil {
+				view.Render(w, r, &TemplateData{Post: post, Errors: []string{err.Error()}})
+				return
+			}
 			http.Redirect(w, r, "/post", http.StatusSeeOther)
 		}
 	}
+}
+
+func (app *Application) DeletePostHandler(w http.ResponseWriter, r *http.Request) {
+	postId := r.URL.Query().Get("id")
+	id, _ := strconv.Atoi(postId)
+	err := DeletePost(id)
+	if err != nil {
+		log.Println(err)
+		http.Redirect(w, r, fmt.Sprintf("/post?error=%s", err.Error()), http.StatusSeeOther)
+		return
+	}
+	http.Redirect(w, r, "/post", http.StatusSeeOther)
 }
 
 func slugify(value string) string {

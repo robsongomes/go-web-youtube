@@ -5,8 +5,7 @@ Posts
 {{define "content"}}
 <h1>Edit Post</h1>
 <div class="container col-5">
-  <form id="form" action="/post/edit" method="post" class="m-5">
-    <input type="hidden" name="id" value="{{.Post.Id}}" />
+  <form id="form" action="/post/edit?id={{.Post.Id}}" method="post" class="m-5">
     {{if .Errors}}
     <div id="errors" class="alert alert-danger">
       <ul>
@@ -45,7 +44,7 @@ Posts
       </div>
     </div>
     <div class="row col-3 offset-2">
-      <button id="button" type="submit" class="btn btn-primary">Create</button>
+      <button id="button" type="submit" class="btn btn-primary">Update</button>
     </div>
   </form>
 </div>

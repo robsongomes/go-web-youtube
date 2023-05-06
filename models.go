@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"time"
 )
@@ -78,4 +79,40 @@ func RetrievePosts() []Post {
 	}
 
 	return posts
+}
+
+func GetPostById(id int) (*Post, error) {
+	var post Post
+	var user User
+	row := db.QueryRow("select id, title, content, slug, user_id, created_at, updated_at from posts where id = ?", id)
+	err := row.Scan(&post.Id, &post.Title, &post.Content, &post.Slug, &user.Id, &post.CreatedAt, &post.UpdatedAt)
+	post.Author = &user
+	if err != nil {
+		return nil, err
+	}
+	return &post, nil
+}
+
+func UpdatePost(post Post) error {
+	stmt, err := db.Prepare("update posts set title = ?, content = ?, slug = ?, updated_at = ? where id = ?")
+	if err != nil {
+		return err
+	}
+	_, err = stmt.Exec(post.Title, post.Content, post.Slug, post.UpdatedAt, post.Id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func DeletePost(id int) error {
+	res, err := db.Exec("delete from posts where id = ?", id)
+	if err != nil {
+		return err
+	}
+	rows, err := res.RowsAffected()
+	if err != nil || rows != 1 {
+		return fmt.Errorf("post %d does not exist", id)
+	}
+	return nil
 }

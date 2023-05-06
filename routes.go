@@ -12,6 +12,7 @@ func (app *Application) Routes() http.Handler {
 	mux.HandleFunc("/post", app.AuthMiddleware(app.PostHandler(PostView)))
 	mux.HandleFunc("/post/new", app.AuthMiddleware(app.NewPostHandler(NewPostView)))
 	mux.HandleFunc("/post/edit", app.AuthMiddleware(app.EditPostHandler(EditPostView)))
+	mux.HandleFunc("/post/delete", app.AuthMiddleware(app.DeletePostHandler))
 
 	mux.HandleFunc("/login", app.LoginHandler(LoginView))
 	mux.HandleFunc("/signup", app.SignupHandler(SignupView))

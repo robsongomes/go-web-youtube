@@ -6,6 +6,19 @@ Posts
 <h1>Posts</h1>
 
 <div class="container">
+  {{if .Errors}}
+  <div id="errors" class="alert alert-danger">
+    <ul>
+      {{
+        range.Errors
+      }}
+      <li>{{.}}</li>
+      {{
+        end
+      }}
+    </ul>
+  </div>
+  {{ end }}
   <a class="btn btn-primary btn-sm my-3" href="post/new">New Post</a>
 
   <table class="table table-striped">
@@ -29,7 +42,7 @@ Posts
         <td scope="row">{{.UpdatedAt | FormattedDate}}</td>
         <td scope="row">
           <a title="edit" href="/post/edit?id={{.Id}}">Edit</a> |
-          <a title="delete" href="#">Delete</a>
+          <a title="delete" href="/post/delete?id={{.Id}}">Delete</a>
         </td>
       </tr>
       {{
