@@ -5,9 +5,31 @@ Home
 {{ end }}
 
 {{define "content"}}
-<h1>Home Page</h1>
+<div class="container">
+  <h1 class="my-4">Post List</h1>
+  <div class="row">
+    {{ range.Posts }}
+    <div class="col-md-6">
+      <div
+        class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative"
+      >
+        <div class="col p-4 d-flex flex-column position-static">
+          <h3 class="mb-1">{{.Title}}</h3>
+          <div class="mb-1 text-body-secondary">
+            {{.UpdatedAt | FormattedDate2}}
+          </div>
+          <p class="card-text mb-2">
+            {{.Content}}
+          </p>
+          <h6 class="my-3 fst-italic">by {{.Author.Email}}</h6>
+          <a href="/post/view?id={{.Id}}" class="stretched-link"
+            >Continue reading</a
+          >
+        </div>
+      </div>
+    </div>
+    {{ end }}
+  </div>
+</div>
 
-<p>Esta é a minha página inicial</p>
-
-<p>Alterei o conteúdo da home</p>
 {{ end }}

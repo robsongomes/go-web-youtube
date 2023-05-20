@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"regexp"
@@ -47,9 +48,27 @@ func (app *Application) AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 
 func (app *Application) HomeHandler(view *View) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		err := view.Render(w, r, nil)
+		posts := RetrievePosts()
+		err := view.Render(w, r, &TemplateData{Posts: posts})
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
+		}
+	}
+}
+
+func (app *Application) HomePostViewHandler(view *View) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		postId := r.URL.Query().Get("id")
+		id, _ := strconv.Atoi(postId)
+		post, err := GetPostById(id)
+		if err != nil {
+			log.Println(err)
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+		}
+		err = view.Render(w, r, &TemplateData{Post: *post})
+		if err != nil {
+			log.Println(err)
+			http.Redirect(w, r, "/", http.StatusSeeOther)
 		}
 	}
 }
@@ -222,7 +241,7 @@ func (app *Application) NewPostHandler(view *View) http.HandlerFunc {
 
 			post := Post{
 				Title:   title,
-				Content: content,
+				Content: template.HTML(content),
 				Slug:    slugify(title),
 				Author:  user,
 			}
@@ -264,7 +283,7 @@ func (app *Application) EditPostHandler(view *View) http.HandlerFunc {
 			post := Post{
 				Id:        id,
 				Title:     title,
-				Content:   content,
+				Content:   template.HTML(content),
 				Slug:      slugify(title),
 				UpdatedAt: time.Now(),
 			}

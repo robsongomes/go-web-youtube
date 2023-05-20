@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"log"
 	"time"
 )
@@ -15,7 +16,7 @@ type User struct {
 type Post struct {
 	Id        int
 	Title     string
-	Content   string
+	Content   template.HTML
 	Slug      string
 	Author    *User
 	CreatedAt time.Time
@@ -52,7 +53,8 @@ func RetrievePosts() []Post {
 	posts := []Post{}
 
 	//buscar o usuário pelo email
-	rows, err := db.Query(`select id, title, slug, content, user_id, created_at, updated_at from posts`)
+	rows, err := db.Query(`select p.id, p.title, p.slug, p.content, p.user_id, u.email, p.created_at, p.updated_at 
+							from posts p join users u on p.user_id = u.id`)
 	if err != nil {
 		log.Println(err)
 		return posts
@@ -67,6 +69,7 @@ func RetrievePosts() []Post {
 			&post.Slug,
 			&post.Content,
 			&user.Id,
+			&user.Email,
 			&post.CreatedAt,
 			&post.UpdatedAt,
 		)
@@ -84,8 +87,18 @@ func RetrievePosts() []Post {
 func GetPostById(id int) (*Post, error) {
 	var post Post
 	var user User
-	row := db.QueryRow("select id, title, content, slug, user_id, created_at, updated_at from posts where id = ?", id)
-	err := row.Scan(&post.Id, &post.Title, &post.Content, &post.Slug, &user.Id, &post.CreatedAt, &post.UpdatedAt)
+	row := db.QueryRow(`select p.id, p.title, p.slug, p.content, p.user_id, u.email, p.created_at, p.updated_at 
+	from posts p join users u on p.user_id = u.id where p.id = ?`, id)
+	err := row.Scan(
+		&post.Id,
+		&post.Title,
+		&post.Slug,
+		&post.Content,
+		&user.Id,
+		&user.Email,
+		&post.CreatedAt,
+		&post.UpdatedAt,
+	)
 	post.Author = &user
 	if err != nil {
 		return nil, err

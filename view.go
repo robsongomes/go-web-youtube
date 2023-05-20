@@ -28,6 +28,9 @@ var funcs = template.FuncMap{
 	"FormattedDate": func(date time.Time) string {
 		return date.Format("02/01/2006 15:04:05")
 	},
+	"FormattedDate2": func(date time.Time) string {
+		return date.Format("Jan 02")
+	},
 }
 
 func getLayoutFiles() []string {
