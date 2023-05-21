@@ -1,0 +1,11 @@
+{{define "title"}}
+About
+{{ end }}
+
+{{define "content"}}
+<h1>About Page</h1>
+
+{{if .User}}
+Bem vindo, {{.User.Email}}
+{{ end }}
+{{ end }}

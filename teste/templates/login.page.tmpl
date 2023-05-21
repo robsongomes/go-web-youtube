@@ -1,0 +1,68 @@
+{{template "base" .}}
+
+{{define "title"}}
+Login
+{{ end }}
+
+{{define "content"}}
+
+<div class="container col-5">
+  <form id="form" action="#" method="post" class="m-5">
+    <div id="errors" class="alert alert-danger invisible">error message</div>
+    <div class="mb-3 row">
+      <label for="email" class="col-sm-2 col-form-label">Email</label>
+      <div class="col-sm-10">
+        <input type="email" id="email" name="email" class="form-control" />
+      </div>
+    </div>
+    <div class="mb-3 row">
+      <label for="password" class="col-sm-2 col-form-label">Password</label>
+      <div class="col-sm-10">
+        <input
+          type="password"
+          id="password"
+          name="password"
+          class="form-control"
+        />
+      </div>
+    </div>
+    <div class="row col-3 offset-2">
+      <button id="button" type="submit" class="btn btn-primary">Login</button>
+    </div>
+  </form>
+</div>
+
+{{ end }}
+
+{{define "script"}}
+<script>
+  document.getElementById("button").addEventListener("click", (event) => {
+    event.preventDefault();
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    fetch("/login", {
+      method: "post",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+        if (data.success) {
+          setTimeout(() => {
+            console.log("Redirecionando para a home...");
+            window.location = "/";
+          }, 1000);
+        } else {
+          const errors = document.getElementById("errors");
+          errors.innerHTML = "Credenciais inválidas";
+          errors.classList.remove("invisible");
+        }
+      });
+  });
+</script>
+{{ end }}

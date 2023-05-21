@@ -3,8 +3,10 @@ package main
 import (
 	"database/sql"
 	"flag"
+	"fmt"
 	"html/template"
 	"log"
+	"os"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -69,7 +71,6 @@ func main() {
 
 	cfg := Config{Version: "1.0.0"}
 	flag.StringVar(&cfg.Port, "port", "3000", "porta do servidor")
-	flag.StringVar(&cfg.Env, "env", "dev", "ambiente de execução")
 
 	flag.Parse()
 
@@ -79,8 +80,15 @@ func main() {
 	}
 
 	//conectar com o mysql (mariadb)
+	db_user := os.Getenv("DB_USER")
+	db_pass := os.Getenv("DB_PASS")
+	db_name := os.Getenv("DB_NAME")
+	db_host := os.Getenv("DB_HOST")
+	db_port := os.Getenv("DB_PORT")
 
-	db, _ = sql.Open("mysql", "root:secret@/mysql?parseTime=true")
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", db_user, db_pass, db_host, db_port, db_name)
+
+	db, _ = sql.Open("mysql", dsn)
 
 	err := db.Ping()
 	if err != nil {
@@ -90,10 +98,43 @@ func main() {
 
 	log.Println("Conectou com o banco de dados")
 
+	initTables()
+
 	createViews()
 
 	log.Printf("Servidor na versão %s-%s escutando na porta %s\n",
-		cfg.Version, cfg.Env, cfg.Port)
+		cfg.Version, env, cfg.Port)
 
 	log.Fatal(app.Start())
+}
+
+func initTables() {
+	log.Println("Criando as tabelas")
+	_, err := db.Exec(`
+	CREATE TABLE IF NOT EXISTS users (
+		id int not null auto_increment,
+		email varchar(255) unique,
+		password varchar(255),
+		primary key (id)
+	);
+	`)
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, err = db.Exec(`
+	CREATE TABLE IF NOT EXISTS posts (
+		id int not null auto_increment,
+		title varchar(255) not null,
+		slug varchar(255) not null unique,
+		content text,
+		user_id int not null,
+		created_at timestamp default current_timestamp(),
+		updated_at timestamp default current_timestamp(),
+		primary key (id),
+		foreign key (user_id) references users(id)
+	);
+	`)
+	if err != nil {
+		log.Fatal(err)
+	}
 }

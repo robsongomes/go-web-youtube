@@ -9,7 +9,6 @@ import (
 
 type Config struct {
 	Port    string
-	Env     string
 	Version string
 }
 

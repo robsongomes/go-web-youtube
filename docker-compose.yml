@@ -1,0 +1,28 @@
+version: "3"
+
+services:
+  site:
+    build:
+      context: ./
+    ports:
+      - "3000:3000"
+    environment:
+      DB_USER: "root"
+      DB_PASS: "secret"
+      DB_NAME: "site"
+      DB_HOST: "db"
+      DB_PORT: "3306"
+    networks:
+      - sitenw
+
+  db:
+    image: mariadb:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: site
+    networks:
+      - sitenw
+
+networks:
+  sitenw:
+    driver: bridge

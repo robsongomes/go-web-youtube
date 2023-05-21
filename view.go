@@ -4,6 +4,7 @@ import (
 	"embed"
 	"fmt"
 	"html/template"
+	"io/fs"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -33,8 +34,28 @@ var funcs = template.FuncMap{
 	},
 }
 
+func listEmbedFiles(efs embed.FS, pattern string) ([]string, error) {
+	lista := make([]string, 0)
+	err := fs.WalkDir(efs, ".", func(path string, d fs.DirEntry, err error) error {
+		if d.IsDir() {
+			return nil
+		}
+		if strings.Contains(path, pattern) {
+			lista = append(lista, path)
+		}
+		return nil
+	})
+	return lista, err
+}
+
 func getLayoutFiles() []string {
-	files, err := filepath.Glob("templates/*.layout.tmpl")
+	var files []string
+	var err error
+	if env == "dev" {
+		files, err = filepath.Glob("templates/*.layout.tmpl")
+	} else {
+		files, err = listEmbedFiles(templateFS, ".layout.tmpl")
+	}
 	if err != nil {
 		panic(err)
 	}
